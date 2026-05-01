@@ -1,7 +1,5 @@
 import uuid
 import django.db.models.deletion
-from decimal import Decimal
-from django.conf import settings
 from django.db import migrations, models
 
 
@@ -12,25 +10,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Add missing Profile fields
+        # Fields missing from Profile
         migrations.AddField(model_name='profile', name='uid', field=models.IntegerField(blank=True, null=True)),
-        migrations.AddField(model_name='profile', name='email', field=models.CharField(blank=True, max_length=200, null=True)),
-        migrations.AddField(model_name='profile', name='first_name', field=models.CharField(blank=True, max_length=250, null=True)),
-        migrations.AddField(model_name='profile', name='last_name', field=models.CharField(blank=True, max_length=250, null=True)),
-        migrations.AddField(model_name='profile', name='profile_picture', field=models.ImageField(blank=True, null=True, upload_to='upload/profile_picture')),
-        migrations.AddField(model_name='profile', name='profile_media', field=models.FileField(blank=True, null=True, upload_to='upload/profile_media')),
-        migrations.AddField(model_name='profile', name='gender', field=models.CharField(blank=True, choices=[('Male', 'male'), ('Female', 'female')], max_length=100, null=True)),
-        migrations.AddField(model_name='profile', name='date_of_birth', field=models.DateField(blank=True, null=True)),
-        migrations.AddField(model_name='profile', name='sexual_orientation', field=models.CharField(blank=True, choices=[('Male', 'male'), ('Female', 'female'), ('Both', 'both')], max_length=100, null=True)),
-        migrations.AddField(model_name='profile', name='zodiac_sign', field=models.CharField(blank=True, max_length=200, null=True)),
-        migrations.AddField(model_name='profile', name='why_are_you_here', field=models.CharField(blank=True, max_length=200, null=True)),
-        migrations.AddField(model_name='profile', name='relationship_status', field=models.CharField(blank=True, max_length=200, null=True)),
-        migrations.AddField(model_name='profile', name='longitude', field=models.DecimalField(blank=True, decimal_places=6, default=Decimal('0.0'), max_digits=9, null=True)),
-        migrations.AddField(model_name='profile', name='latitude', field=models.DecimalField(blank=True, decimal_places=6, default=Decimal('0.0'), max_digits=9, null=True)),
-        migrations.AddField(model_name='profile', name='bio', field=models.TextField(blank=True, null=True)),
-        migrations.AddField(model_name='profile', name='referral_code', field=models.CharField(blank=True, max_length=100, null=True)),
-        migrations.AddField(model_name='profile', name='occupation', field=models.CharField(blank=True, max_length=200, null=True)),
-        migrations.AddField(model_name='profile', name='height', field=models.CharField(blank=True, max_digits=200, null=True) if False else models.CharField(blank=True, max_length=200, null=True)),
         migrations.AddField(model_name='profile', name='fcm_token', field=models.CharField(blank=True, max_length=250, null=True)),
         migrations.AddField(model_name='profile', name='is_location', field=models.BooleanField(blank=True, default=False, null=True)),
         migrations.AddField(model_name='profile', name='is_incognito', field=models.BooleanField(blank=True, default=False, null=True)),
@@ -43,18 +24,48 @@ class Migration(migrations.Migration):
         migrations.AddField(model_name='profile', name='location_name', field=models.CharField(blank=True, max_length=250, null=True)),
         migrations.AddField(model_name='profile', name='distance', field=models.CharField(blank=True, max_length=250, null=True)),
 
-        # Add entertainment M2M
-        migrations.AddField(model_name='profile', name='entertainment', field=models.ManyToManyField(blank=True, to='profiles.entertainment')),
-
-        # Fix Like model - rename reciever to receiver
-        migrations.RenameField(model_name='like', old_name='reciever', new_name='receiver'),
-
-        # Add Plan FK to profile
-        migrations.AddField(
+        # Fix longitude/latitude from IntegerField to DecimalField
+        migrations.AlterField(
             model_name='profile',
-            name='plan',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='profiles.plan'),
+            name='longitude',
+            field=models.DecimalField(blank=True, decimal_places=6, default='0.0', max_digits=9, null=True),
         ),
+        migrations.AlterField(
+            model_name='profile',
+            name='latitude',
+            field=models.DecimalField(blank=True, decimal_places=6, default='0.0', max_digits=9, null=True),
+        ),
+
+        # Fix date_of_birth from CharField to DateField
+        migrations.AlterField(
+            model_name='profile',
+            name='date_of_birth',
+            field=models.DateField(blank=True, null=True),
+        ),
+
+        # Fix gender choices
+        migrations.AlterField(
+            model_name='profile',
+            name='gender',
+            field=models.CharField(blank=True, choices=[('Male', 'male'), ('Female', 'female')], max_length=100, null=True),
+        ),
+
+        # Fix sexual_orientation choices
+        migrations.AlterField(
+            model_name='profile',
+            name='sexual_orientation',
+            field=models.CharField(blank=True, choices=[('Male', 'male'), ('Female', 'female'), ('Both', 'both')], max_length=100, null=True),
+        ),
+
+        # Add missing Plan fields
+        migrations.AddField(model_name='plan', name='product_id', field=models.CharField(blank=True, max_length=100, null=True)),
+        migrations.AddField(model_name='plan', name='max_minutes', field=models.PositiveIntegerField(blank=True, default=0, null=True)),
+
+        # Add missing Gift field
+        migrations.AddField(model_name='gift', name='product_id', field=models.CharField(blank=True, max_length=100, null=True)),
+
+        # Fix Like receiver field name
+        migrations.RenameField(model_name='like', old_name='reciever', new_name='receiver'),
 
         # Create ProfileGift model
         migrations.CreateModel(
@@ -118,6 +129,11 @@ class Migration(migrations.Migration):
             ],
         ),
 
-        # Remove old reports M2M and gifting model refs that no longer exist
+        # Remove old fields no longer in model
         migrations.RemoveField(model_name='profile', name='reports'),
+        migrations.RemoveField(model_name='profile', name='blocked'),
+        migrations.RemoveField(model_name='profile', name='likes'),
+        migrations.RemoveField(model_name='profile', name='gift_bought'),
+        migrations.RemoveField(model_name='profile', name='gift_recieved'),
+        migrations.RemoveField(model_name='profile', name='gift_sent'),
     ]
