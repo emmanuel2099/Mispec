@@ -1,0 +1,23 @@
+image: python:3.10.10
+
+pipelines:
+  branches:
+    '{master}':
+    - step:
+        name: Build
+        script:
+          - git archive --format=tar.gz master -o mispec.tar.gz
+        artifacts:
+          - mispec.tar.gz
+    - step:
+        name: Deploy to production
+        deployment: production
+        caches:
+          - pip
+        script:
+          - pipe: atlassian/heroku-deploy:0.1.1
+            variables:
+              HEROKU_API_KEY: $HEROKU_API_KEY
+              HEROKU_APP_NAME: $HEROKU_APP_NAME
+              ZIP_FILE: mispec.tar.gz
+              DEBUG: 'true'

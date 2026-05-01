@@ -1,0 +1,159 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                   MISPEC BACKEND - QUICK ACCESS CARD                         ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🚀 START SERVER                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Method 1: Double-click                                                      │
+│  📁 start_server.bat                                                         │
+│                                                                              │
+│  Method 2: Command line                                                      │
+│  $ python manage.py runserver                                                │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🌐 ACCESS URLS                                                               │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  📚 Swagger UI (Interactive API Testing)                                     │
+│  http://localhost:8000/                                                      │
+│                                                                              │
+│  🔐 Django Admin (Database Management)                                       │
+│  http://localhost:8000/admin/                                                │
+│                                                                              │
+│  📖 ReDoc (Clean API Documentation)                                          │
+│  http://localhost:8000/redoc/                                                │
+│                                                                              │
+│  📄 JSON Schema (API Export)                                                 │
+│  http://localhost:8000/api/api.json/                                         │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔑 FIRST TIME SETUP                                                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  1. Install dependencies                                                     │
+│     $ pip install -r requirements.txt                                        │
+│                                                                              │
+│  2. Run migrations                                                           │
+│     $ python manage.py migrate                                               │
+│                                                                              │
+│  3. Create superuser (for admin access)                                      │
+│     $ python manage.py createsuperuser                                       │
+│                                                                              │
+│  4. Start server                                                             │
+│     $ python manage.py runserver                                             │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📚 SWAGGER UI - HOW TO USE                                                   │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Step 1: Login to get token                                                  │
+│  • Click POST /users/login/                                                  │
+│  • Click "Try it out"                                                        │
+│  • Enter email and password                                                  │
+│  • Click "Execute"                                                           │
+│  • Copy the "access" token from response                                     │
+│                                                                              │
+│  Step 2: Authorize                                                           │
+│  • Click "Authorize" button (top right)                                      │
+│  • Enter: Bearer <your_access_token>                                         │
+│  • Click "Authorize"                                                         │
+│                                                                              │
+│  Step 3: Test endpoints                                                      │
+│  • Click any endpoint                                                        │
+│  • Click "Try it out"                                                        │
+│  • Fill parameters                                                           │
+│  • Click "Execute"                                                           │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔐 ADMIN PANEL - HOW TO USE                                                  │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Step 1: Access admin                                                        │
+│  • Go to http://localhost:8000/admin/                                        │
+│                                                                              │
+│  Step 2: Login                                                               │
+│  • Username: (your superuser username)                                       │
+│  • Password: (your superuser password)                                       │
+│                                                                              │
+│  Step 3: Manage data                                                         │
+│  • Click on any model (Users, Profiles, Chat, etc.)                          │
+│  • View, edit, add, or delete records                                        │
+│  • Use search and filters                                                    │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📊 WHAT'S AVAILABLE                                                          │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  API Endpoints: 55 total                                                     │
+│  • Users API:    13 endpoints (authentication, registration)                 │
+│  • Profiles API: 28 endpoints (profiles, matching, gifts)                    │
+│  • Chat API:     14 endpoints (messaging, calls, events)                     │
+│                                                                              │
+│  Admin Models:                                                               │
+│  • Users:    Custom users, OTP checks                                        │
+│  • Profiles: Profiles, Likes, Matches, Blocks, Reports, Gifts               │
+│  • Chat:     Chat rooms, Messages, Events, Calls                             │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 🔧 TROUBLESHOOTING                                                           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Problem: Server won't start                                                 │
+│  Solution: pip install -r requirements.txt                                   │
+│                                                                              │
+│  Problem: Can't login to admin                                               │
+│  Solution: python manage.py createsuperuser                                  │
+│                                                                              │
+│  Problem: Port already in use                                                │
+│  Solution: python manage.py runserver 8080                                   │
+│                                                                              │
+│  Problem: Module not found                                                   │
+│  Solution: pip install <module_name>                                         │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ 📖 DOCUMENTATION FILES                                                       │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  📄 ACCESS_ADMIN_AND_SWAGGER.md  - Complete guide with all details          │
+│  📄 VISUAL_GUIDE.md              - Visual walkthrough with examples          │
+│  📄 QUICK_ACCESS_CARD.txt        - This quick reference (you are here)       │
+│  📄 start_server.bat             - Quick start script                        │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ ⚡ QUICK COMMANDS                                                            │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  Start server:        python manage.py runserver                             │
+│  Run migrations:      python manage.py migrate                               │
+│  Create superuser:    python manage.py createsuperuser                       │
+│  Change password:     python manage.py changepassword <username>             │
+│  Collect static:      python manage.py collectstatic                         │
+│  Run tests:           python test_all_apis.py                                │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                            READY TO GO! 🚀                                   ║
+║                                                                              ║
+║  1. Run: python manage.py runserver                                          ║
+║  2. Open: http://localhost:8000/                                             ║
+║  3. Explore your APIs!                                                       ║
+╚══════════════════════════════════════════════════════════════════════════════╝

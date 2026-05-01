@@ -1,0 +1,239 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    MISPEC BACKEND API TEST SUITE STRUCTURE                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📁 MISPEC Backend Testing Files
+│
+├── 📄 START_HERE.md ⭐
+│   └── Quick start guide - READ THIS FIRST!
+│
+├── 🧪 TEST EXECUTION FILES
+│   ├── test_all_apis.py (Main Python test script - 20KB)
+│   ├── run_api_tests.bat (Windows runner)
+│   ├── run_api_tests.sh (Linux/Mac runner)
+│   └── test_requirements.txt (Dependencies)
+│
+├── 📚 DOCUMENTATION
+│   ├── TESTING_GUIDE.md (Complete guide with troubleshooting)
+│   ├── API_TEST_README.md (Detailed test documentation)
+│   └── API_ENDPOINTS_SUMMARY.md (All 55 endpoints reference)
+│
+└── 🔧 TOOLS
+    └── MISPEC_API_Collection.postman_collection.json (Postman import)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 TEST COVERAGE: 55 ENDPOINTS
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ USERS API (13 endpoints)                                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Authentication & Registration                                                │
+│   ✓ /users/send_otp/              - Send OTP to phone                       │
+│   ✓ /users/verify_otp/            - Verify OTP code                         │
+│   ✓ /users/register/              - Register new user                       │
+│   ✓ /users/login/                 - Login with credentials                  │
+│   ✓ /users/logout/                - Logout user                             │
+│   ✓ /users/api/token/             - Get JWT tokens                          │
+│   ✓ /users/api/token/refresh/    - Refresh access token                     │
+│   ✓ /users/auth_provider/         - Social login (OAuth)                    │
+│                                                                               │
+│ Account Management                                                            │
+│   ✓ /users/create_referral/       - Create referral code                    │
+│   ✓ /users/change_password/       - Change password                         │
+│   ✓ /users/reset_password_request/ - Request password reset                 │
+│   ✓ /users/reset_password_verify/ - Verify and reset password               │
+│   ✓ /users/delete_account/        - Delete user account                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PROFILES API (28 endpoints)                                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Profile Management (4)                                                        │
+│   ✓ /profiles/profiles_update/    - Update profile                          │
+│   ✓ /profiles/profiles_filter/    - Filter profiles                         │
+│   ✓ /profiles/both_profiles_filter/ - Filter both genders                   │
+│   ✓ /profiles/media_delete/       - Delete media                            │
+│                                                                               │
+│ Interests (2)                                                                 │
+│   ✓ /profiles/entertainment/      - Entertainment preferences                │
+│   ✓ /profiles/sport/              - Sport preferences                        │
+│                                                                               │
+│ Interactions (4)                                                              │
+│   ✓ /profiles/like_create/        - Like a profile                          │
+│   ✓ /profiles/liked_profiles/     - Get liked profiles                      │
+│   ✓ /profiles/dislike/            - Dislike a profile                       │
+│   ✓ /profiles/matches/            - Get matches                             │
+│                                                                               │
+│ Moderation (5)                                                                │
+│   ✓ /profiles/report_create/      - Report profile                          │
+│   ✓ /profiles/reported_profiles/  - Get reported profiles                   │
+│   ✓ /profiles/block_create/       - Block profile                           │
+│   ✓ /profiles/blocked_profiles/   - Get blocked profiles                    │
+│   ✓ /profiles/profile_unblock/    - Unblock profile                         │
+│                                                                               │
+│ Gifts & Rewards (6)                                                           │
+│   ✓ /profiles/gifts/              - List available gifts                    │
+│   ✓ /profiles/profile_gift/       - Create profile gift                     │
+│   ✓ /profiles/send_gift/          - Send gift to user                       │
+│   ✓ /profiles/owned_gift/         - Get owned gifts                         │
+│   ✓ /profiles/received_gift/      - Get received gifts                      │
+│   ✓ /profiles/redeem_gift/        - Redeem a gift                           │
+│                                                                               │
+│ Referrals (2)                                                                 │
+│   ✓ /profiles/referrals/          - Get referral info                       │
+│   ✓ /profiles/redeem_referral/    - Redeem referral code                    │
+│                                                                               │
+│ Notifications (3)                                                             │
+│   ✓ /profiles/notifications/      - Get all notifications                   │
+│   ✓ /profiles/chat_notifications/ - Get chat notifications                  │
+│   ✓ /profiles/read_notification/  - Mark as read                            │
+│                                                                               │
+│ Other (2)                                                                     │
+│   ✓ /profiles/verify_purchase/    - Verify in-app purchase                  │
+│   ✓ /profiles/support/            - Submit support request                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CHAT API (14 endpoints)                                                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Messaging (3)                                                                 │
+│   ✓ /chat/messages/               - Get messages                            │
+│   ✓ /chat/active_chatrooms/       - Get active chatrooms                    │
+│   ✓ /chat/create_room/            - Create chat room                        │
+│                                                                               │
+│ Voice/Video Calls (4)                                                         │
+│   ✓ /chat/make_call/              - Initiate a call                         │
+│   ✓ /chat/join_call/              - Join ongoing call                       │
+│   ✓ /chat/end_call/               - End a call                              │
+│   ✓ /chat/call_history/           - Get call history                        │
+│                                                                               │
+│ Events (7)                                                                    │
+│   ✓ /chat/create_event/           - Create new event                        │
+│   ✓ /chat/edit_event/             - Edit existing event                     │
+│   ✓ /chat/event_detail/           - Get event details                       │
+│   ✓ /chat/add_member/             - Add member to event                     │
+│   ✓ /chat/leave_event/            - Leave an event                          │
+│   ✓ /chat/stop_event/             - Stop/end an event                       │
+│   ✓ /chat/report_event/           - Report an event                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔄 TEST FLOW
+
+1. AUTHENTICATION
+   ┌─────────────┐
+   │ Send OTP    │
+   └──────┬──────┘
+          │
+   ┌──────▼──────┐
+   │ Verify OTP  │
+   └──────┬──────┘
+          │
+   ┌──────▼──────┐
+   │  Register   │
+   └──────┬──────┘
+          │
+   ┌──────▼──────┐
+   │   Login     │ ──► Saves Access Token
+   └──────┬──────┘
+          │
+          ▼
+   [Token stored for authenticated requests]
+
+2. AUTHENTICATED REQUESTS
+   All subsequent requests use: Authorization: Bearer <token>
+
+3. TOKEN REFRESH
+   When token expires ──► /users/api/token/refresh/
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🚀 EXECUTION METHODS
+
+Method 1: Automated Script
+┌────────────────────────────────────────┐
+│ $ python test_all_apis.py              │
+│                                        │
+│ ✓ Tests all 55 endpoints               │
+│ ✓ Color-coded output                   │
+│ ✓ Automatic token management           │
+│ ✓ Progress tracking                    │
+└────────────────────────────────────────┘
+
+Method 2: Runner Scripts
+┌────────────────────────────────────────┐
+│ Windows: run_api_tests.bat            │
+│ Linux/Mac: ./run_api_tests.sh         │
+│                                        │
+│ ✓ Auto setup virtual environment       │
+│ ✓ Install dependencies                 │
+│ ✓ Check server status                  │
+│ ✓ Run tests                            │
+└────────────────────────────────────────┘
+
+Method 3: Postman Collection
+┌────────────────────────────────────────┐
+│ Import: MISPEC_API_Collection.json    │
+│                                        │
+│ ✓ Visual interface                     │
+│ ✓ Manual testing                       │
+│ ✓ Request/response inspection          │
+│ ✓ Save test data                       │
+└────────────────────────────────────────┘
+
+Method 4: Swagger UI
+┌────────────────────────────────────────┐
+│ URL: http://localhost:8000/            │
+│                                        │
+│ ✓ Interactive documentation            │
+│ ✓ Try endpoints in browser             │
+│ ✓ No setup required                    │
+│ ✓ Real-time testing                    │
+└────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 TEST OUTPUT EXAMPLE
+
+✓ PASS | POST   | /users/login/                    | Status: 200 | Success
+✗ FAIL | POST   | /users/register/                 | Status: 400 | Email exists
+⚠ SKIP | POST   | /users/verify_otp/               | Status: 0   | Requires OTP
+
+Legend:
+  ✓ = Test passed (green)
+  ✗ = Test failed (red)
+  ⚠ = Test skipped (yellow)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 QUICK START COMMANDS
+
+# 1. Start Django Server
+python manage.py runserver
+
+# 2. Run Tests (choose one)
+python test_all_apis.py              # Direct
+./run_api_tests.sh                   # Linux/Mac
+run_api_tests.bat                    # Windows
+
+# 3. View Documentation
+http://localhost:8000/               # Swagger UI
+http://localhost:8000/redoc/         # ReDoc
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📞 SUPPORT
+
+Documentation:
+  • START_HERE.md          - Quick start guide
+  • TESTING_GUIDE.md       - Complete testing guide
+  • API_TEST_README.md     - Detailed documentation
+  • API_ENDPOINTS_SUMMARY.md - Endpoint reference
+
+Contact:
+  • Email: dev.team@mispec.co.uk
+  • Check Django logs for errors
+
+═══════════════════════════════════════════════════════════════════════════════

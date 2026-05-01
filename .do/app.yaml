@@ -1,0 +1,139 @@
+name: mispec
+region: nyc
+
+services:
+  - name: web
+    github:
+      repo: YOUR_GITHUB_USERNAME/YOUR_REPO_NAME
+      branch: main
+      deploy_on_push: true
+    build_command: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+    run_command: gunicorn mispec.wsgi:application --log-file -
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    http_port: 8000
+    envs:
+      - key: SECRET_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: DATABASE_URL
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: REDIS_URL
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: DEBUG
+        scope: RUN_AND_BUILD_TIME
+        value: "False"
+      - key: ALLOWED_HOSTS
+        scope: RUN_AND_BUILD_TIME
+        value: "${APP_DOMAIN}"
+      - key: AWS_ACCESS_KEY_ID
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: AWS_SECRET_ACCESS_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: AWS_STORAGE_BUCKET_NAME
+        scope: RUN_AND_BUILD_TIME
+        value: mispecbackend
+      - key: AWS_S3_SIGNATURE_NAME
+        scope: RUN_AND_BUILD_TIME
+        value: s3v4
+      - key: AWS_S3_REGION_NAME
+        scope: RUN_AND_BUILD_TIME
+        value: us-east-1
+      - key: AGORA_APP_ID
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: AGORA_APP_CERT
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: EMAIL_HOST
+        scope: RUN_AND_BUILD_TIME
+        value: smtp.sendgrid.net
+      - key: EMAIL_PORT
+        scope: RUN_AND_BUILD_TIME
+        value: "587"
+      - key: EMAIL_HOST_USER
+        scope: RUN_AND_BUILD_TIME
+        value: apikey
+      - key: EMAIL_HOST_PASSWORD
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: DEFAULT_FROM_EMAIL
+        scope: RUN_AND_BUILD_TIME
+        value: support@mispec.co.uk
+      - key: ADMIN_EMAIL
+        scope: RUN_AND_BUILD_TIME
+        value: info@mispec.co.uk
+      - key: BREVO_API_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: MAILBIT_API_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: app_id
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: key
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: secret
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: cluster
+        scope: RUN_AND_BUILD_TIME
+        value: us2
+      - key: DYTE_API_BASE_URL
+        scope: RUN_AND_BUILD_TIME
+        value: https://api.dyte.io
+      - key: DYTE_ORG_ID
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: DYTE_API_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: GOOGLE_SERVICE_ACCOUNT_FILE
+        scope: RUN_AND_BUILD_TIME
+        value: gpay/mispec-dating-app-cef3112fd645.json
+      - key: APPLE_SHARED_SECRET
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+
+workers:
+  - name: celery-worker
+    github:
+      repo: YOUR_GITHUB_USERNAME/YOUR_REPO_NAME
+      branch: main
+    run_command: celery -A mispec worker --loglevel=info
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: REDIS_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
+
+  - name: celery-beat
+    github:
+      repo: YOUR_GITHUB_USERNAME/YOUR_REPO_NAME
+      branch: main
+    run_command: celery -A mispec beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    instance_size_slug: basic-xxs
+    instance_count: 1
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: REDIS_URL
+        scope: RUN_TIME
+        type: SECRET
+      - key: SECRET_KEY
+        scope: RUN_TIME
+        type: SECRET
