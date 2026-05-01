@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('profiles', '0027_alter_notification_notification_type'),
+        ('profiles', '0002_initial'),
     ]
 
     operations = [
