@@ -293,8 +293,10 @@ AWS_DEFAULT_ACL = None
 AWS_S3_VERITY = True
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-cred = credentials.Certificate("firebase/mispec-dating-app-firebase-adminsdk-9j4qt-6ff6fe6474.json")
-firebase_admin.initialize_app(cred)
+firebase_cred_path = "firebase/mispec-dating-app-firebase-adminsdk-9j4qt-6ff6fe6474.json"
+if os.path.exists(firebase_cred_path):
+    cred = credentials.Certificate(firebase_cred_path)
+    firebase_admin.initialize_app(cred)
 
 # Whitenoise for static files
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
