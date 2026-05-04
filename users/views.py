@@ -113,7 +113,10 @@ class ResetPasswordRequest(APIView):
 
         otp = generate_otp()
 
-        send_otp(email, otp)
+        try:
+            send_otp(email, otp)
+        except Exception as e:
+            print(f"Reset password email error: {e}")
 
         return Response({'message': 'OTP sent successfully', 'otp': otp}, status=status.HTTP_200_OK)
     
