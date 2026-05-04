@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'chat.apps.ChatConfig',
     'drf_yasg',
     'django_celery_beat',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
