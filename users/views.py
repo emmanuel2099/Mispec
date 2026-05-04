@@ -43,8 +43,9 @@ class OtpSendView(APIView):
             send_otp(email, generated_otp)
 
         except Exception as e:
-            print(f"Failed to send SMS. Error: {e}")
-            return Response({"error": "Failed to send SMS"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            import traceback
+            traceback.print_exc()
+            return Response({"error": f"Failed to send OTP email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         response_data = {
             "success": "OTP sent successfully"
