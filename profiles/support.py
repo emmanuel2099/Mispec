@@ -1,26 +1,30 @@
-from mailbit import Mailbit
+import requests
 from django.conf import settings
 
+
 def send_contact_email(sender, description):
-    api_key = settings.MAILBIT_API_KEY
-      
-    email_data = {
-        'toAddress': settings.ADMIN_EMAIL,
-        'subject': f'Message from {sender}',
-        'template': f'''<html><body>
-        <p>You have received a new message from the support form on mispec.</p>
-        <p><strong>Message:</strong><br>{description}</p>
-        </body></html>''',
-        'from': settings.DEFAULT_FROM_EMAIL,
-        'senderName':'Mispec Support',
-        'replyTo': 'no reply',
-        'attachments': []
+    html_content = f"""<html><body>
+    <p>You have received a new message from the support form on Mispec.</p>
+    <p><strong>From:</strong> {sender}</p>
+    <p><strong>Message:</strong><br>{description}</p>
+    </body></html>"""
+
+    payload = {
+        "sender": {"name": "Mispec Support", "email": settings.DEFAULT_FROM_EMAIL},
+        "to": [{"email": settings.ADMIN_EMAIL}],
+        "subject": f"Support message from {sender}",
+        "htmlContent": html_content,
     }
-    
-    mailbit = Mailbit(api_key)
-    
+
     try:
-        mailbit.send_email(email_data)
-        print('Contact form email successfully sent.')
-    except ValueError as e:
-        print('An error occurred:', e)
+        response = requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            json=payload,
+            headers={
+                "api-key": settings.BREVO_API_KEY,
+                "Content-Type": "application/json",
+            },
+        )
+        print(f"Support email sent, status: {response.status_code}")
+    except Exception as e:
+        print(f"Support email error: {e}")
