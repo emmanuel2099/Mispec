@@ -64,7 +64,7 @@ multidict==6.0.5
 ndg-httpsclient==0.5.1
 oauthlib==3.2.2
 packaging==23.2
-pillow==10.3.0
+pillow==11.2.1
 prompt_toolkit==3.0.47
 proto-plus==1.23.0
 protobuf==4.25.3
