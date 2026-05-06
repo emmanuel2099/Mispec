@@ -24,6 +24,7 @@ cryptography==42.0.3
 defusedxml==0.8.0rc2
 dj-database-url==2.1.0
 Django==5.0.2
+django-celery-beat==2.6.0
 django-redis==5.4.0
 django-storages==1.14.2
 django-templated-mail==1.1.1
