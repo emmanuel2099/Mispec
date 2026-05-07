@@ -39,22 +39,12 @@ class OtpSendView(APIView):
         otp_instance.otp_code = generated_otp
         otp_instance.save()
 
-        try:
-            send_otp(email, generated_otp)
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            # Email failed but OTP is saved — return it so testing isn't blocked
-            # TODO: remove otp from response once email service is working
-            return Response({
-                "success": "OTP generated (email delivery failed)",
-                "otp": generated_otp
-            }, status=status.HTTP_200_OK)
+        send_otp(email, generated_otp)
 
-        response_data = {
-            "success": "OTP sent successfully"
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
+        return Response({
+            "success": "OTP sent successfully",
+            "otp": generated_otp  # TODO: remove once email delivery is confirmed working
+        }, status=status.HTTP_200_OK)
     
 
 class VerifyOtpView(APIView):
