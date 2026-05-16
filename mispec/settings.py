@@ -199,7 +199,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('GMAIL_USER', default='')
 EMAIL_HOST_PASSWORD = config('GMAIL_APP_PASSWORD', default='')
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-DEFAULT_FROM_EMAIL = config('GMAIL_USER', default='support@mispec.co.uk')
+DEFAULT_FROM_EMAIL = config('GMAIL_USER', default='emmappdesigner@gmail.com')
 ADMIN_EMAIL = config('ADMIN_EMAIL')
 
 BREVO_API_KEY = config('BREVO_API_KEY')
