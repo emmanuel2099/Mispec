@@ -4,9 +4,19 @@ from django.conf import settings
 
 
 def send_otp(email, otp):
-    """Send OTP via Brevo HTTP API. Called synchronously so errors are visible."""
+    """Send OTP via Gmail SMTP using app password - free and reliable."""
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
     try:
-        html_content = f"""
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = 'Your Mispec OTP Code'
+        msg['From'] = settings.EMAIL_HOST_USER
+        msg['To'] = email
+
+        text = f"Your Mispec OTP code is: {otp}. It expires in 5 minutes."
+        html = f"""
         <html><body>
         <p>Hi,</p>
         <p>Please verify your account using the code below:</p>
@@ -16,30 +26,18 @@ def send_otp(email, otp):
         <p>Thanks,<br>Mispec Team</p>
         </body></html>
         """
+        msg.attach(MIMEText(text, 'plain'))
+        msg.attach(MIMEText(html, 'html'))
 
-        response = requests.post(
-            "https://api.brevo.com/v3/smtp/email",
-            json={
-                "sender": {"name": "Mispec", "email": settings.DEFAULT_FROM_EMAIL},
-                "to": [{"email": email}],
-                "subject": "Your Mispec OTP Code",
-                "htmlContent": html_content,
-                "textContent": f"Your Mispec OTP code is: {otp}. It expires in 5 minutes.",
-            },
-            headers={
-                "api-key": settings.BREVO_API_KEY,
-                "Content-Type": "application/json",
-            },
-            timeout=15,
-        )
+        with smtplib.SMTP(settings.EMAIL_HOST, int(settings.EMAIL_PORT), timeout=15) as server:
+            server.ehlo()
+            server.starttls()
+            server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+            server.sendmail(settings.EMAIL_HOST_USER, [email], msg.as_string())
 
-        if response.status_code in (200, 201):
-            print(f"[OTP] Email sent to {email} | messageId: {response.json().get('messageId')}")
-        else:
-            print(f"[OTP] Brevo error {response.status_code}: {response.text}")
-            raise Exception(f"Brevo API error: {response.status_code} {response.text}")
+        print(f"[OTP] Email sent successfully to {email}")
 
     except Exception as e:
-        print(f"[OTP] Failed to send to {email}: {e}")
+        print(f"[OTP] Email failed to {email}: {e}")
         traceback.print_exc()
         raise
