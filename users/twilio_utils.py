@@ -1,28 +1,46 @@
 import threading
 import traceback
-from django.core.mail import send_mail
+import requests
 from django.conf import settings
 
 
 def _send_email(email, otp):
     try:
         html_content = f"""
-        Hi,<br>We're excited to have you get started.<br><br>
-        Please verify your account using the code below:<br>
-        <strong style="font-size:24px;">{otp}</strong><br><br>
-        Note: This code expires in 5 minutes.
-        If this wasn't done by you, contact <a href="mailto:Info@mispec.co.uk">Info@mispec.co.uk</a><br><br>
-        Thanks for choosing Mispec.
+        <html><body>
+        <p>Hi,</p>
+        <p>We're excited to have you get started.</p>
+        <p>Please verify your account using the code below:</p>
+        <p><strong style="font-size:24px;">{otp}</strong></p>
+        <p>Note: This code expires in 5 minutes.<br>
+        If this wasn't done by you, contact <a href="mailto:Info@mispec.co.uk">Info@mispec.co.uk</a></p>
+        <p>Thanks for choosing Mispec.</p>
+        </body></html>
         """
-        send_mail(
-            subject="Your OTP Code",
-            message=f"Your OTP code is: {otp}. It expires in 5 minutes.",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            html_message=html_content,
-            fail_silently=False,
+
+        payload = {
+            "sender": {"name": "Mispec", "email": settings.DEFAULT_FROM_EMAIL},
+            "to": [{"email": email}],
+            "subject": "Your OTP Code",
+            "htmlContent": html_content,
+            "textContent": f"Your OTP code is: {otp}. It expires in 5 minutes.",
+        }
+
+        response = requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            json=payload,
+            headers={
+                "api-key": settings.BREVO_API_KEY,
+                "Content-Type": "application/json",
+            },
+            timeout=15,
         )
-        print(f"[OTP] Email sent successfully to {email}")
+
+        if response.status_code in (200, 201):
+            print(f"[OTP] Email sent successfully to {email}")
+        else:
+            print(f"[OTP] Brevo returned {response.status_code}: {response.text}")
+
     except Exception as e:
         print(f"[OTP] Email failed to {email}: {e}")
         traceback.print_exc()
