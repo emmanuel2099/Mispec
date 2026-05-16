@@ -1,6 +1,6 @@
 import threading
 import traceback
-from django.core.mail import send_mail
+import requests
 from django.conf import settings
 
 
@@ -18,15 +18,28 @@ def _send_email(email, otp):
         <p>Thanks for choosing Mispec.</p>
         </body></html>
         """
-        send_mail(
-            subject="Your OTP Code",
-            message=f"Your OTP code is: {otp}. It expires in 5 minutes.",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            html_message=html_content,
-            fail_silently=False,
+
+        response = requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            json={
+                "sender": {"name": "Mispec", "email": settings.DEFAULT_FROM_EMAIL},
+                "to": [{"email": email}],
+                "subject": "Your OTP Code",
+                "htmlContent": html_content,
+                "textContent": f"Your OTP code is: {otp}. It expires in 5 minutes.",
+            },
+            headers={
+                "api-key": settings.BREVO_API_KEY,
+                "Content-Type": "application/json",
+            },
+            timeout=15,
         )
-        print(f"[OTP] Email sent successfully to {email}")
+
+        if response.status_code in (200, 201):
+            print(f"[OTP] Email sent successfully to {email}")
+        else:
+            print(f"[OTP] Brevo error {response.status_code}: {response.text}")
+
     except Exception as e:
         print(f"[OTP] Email failed to {email}: {e}")
         traceback.print_exc()
