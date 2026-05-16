@@ -55,58 +55,81 @@ class ProfileUpdateView(generics.RetrieveUpdateAPIView):
         return self.queryset.get(user=self.request.user)
     
     def update(self, request, *args, **kwargs):
-        instance = self.get_object()
+        try:
+            instance = self.get_object()
 
-        user_id = request.data.get('user')
-        if user_id:
-            user_instance = get_object_or_404(CustomUser, id=user_id)
-            instance.user = user_instance
+            user_id = request.data.get('user')
+            if user_id:
+                user_instance = get_object_or_404(CustomUser, id=user_id)
+                instance.user = user_instance
 
-        for field in Profile._meta.fields:
-            field_name = field.name
-            if field_name == 'user':
-                continue
-            if field_name not in request.data:
-                continue
-            field_value = request.data.get(field_name)
-            if field_name in ['longitude', 'latitude'] and field_value == '':
-                field_value = None
-            setattr(instance, field_name, field_value)
+            # File fields must come from request.FILES, not request.data
+            file_field_names = {
+                f.name for f in Profile._meta.fields
+                if hasattr(f, 'upload_to')
+            }
 
-        # Handle M2M — works for both multipart (getlist) and JSON (list value)
-        entertainment_ids = (
-            request.data.getlist('entertainment')
-            if hasattr(request.data, 'getlist')
-            else request.data.get('entertainment', [])
-        )
-        if entertainment_ids:
-            instance.entertainment.set(entertainment_ids)
+            for field in Profile._meta.fields:
+                field_name = field.name
+                if field_name == 'user':
+                    continue
+                # File fields: only update if a new file was actually uploaded
+                if field_name in file_field_names:
+                    if field_name in request.FILES:
+                        setattr(instance, field_name, request.FILES[field_name])
+                    continue
+                if field_name not in request.data:
+                    continue
+                field_value = request.data.get(field_name)
+                if field_name in ['longitude', 'latitude'] and field_value == '':
+                    field_value = None
+                setattr(instance, field_name, field_value)
 
-        sport_ids = (
-            request.data.getlist('sport')
-            if hasattr(request.data, 'getlist')
-            else request.data.get('sport', [])
-        )
-        if sport_ids:
-            instance.sport.set(sport_ids)
+            # Handle M2M — works for both multipart (getlist) and JSON (list value)
+            entertainment_ids = (
+                request.data.getlist('entertainment')
+                if hasattr(request.data, 'getlist')
+                else request.data.get('entertainment', [])
+            )
+            if entertainment_ids:
+                instance.entertainment.set(entertainment_ids)
 
-        # Handle media uploads (multipart only)
-        uploaded_medias = (
-            request.data.getlist('uploaded_medias')
-            if hasattr(request.data, 'getlist')
-            else []
-        )
-        for uploaded_media in uploaded_medias:
-            media_data = {'files': uploaded_media, 'profile': instance.id}
-            media_serializer = ProfileMediaSerializer(data=media_data)
-            if media_serializer.is_valid():
-                media_serializer.save()
-            else:
-                print(media_serializer.errors)
+            sport_ids = (
+                request.data.getlist('sport')
+                if hasattr(request.data, 'getlist')
+                else request.data.get('sport', [])
+            )
+            if sport_ids:
+                instance.sport.set(sport_ids)
 
-        instance.save()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            # Handle media uploads (multipart only)
+            uploaded_medias = (
+                request.FILES.getlist('uploaded_medias')
+                if hasattr(request.FILES, 'getlist')
+                else []
+            )
+            for uploaded_media in uploaded_medias:
+                media_data = {'files': uploaded_media, 'profile': instance.id}
+                media_serializer = ProfileMediaSerializer(data=media_data)
+                if media_serializer.is_valid():
+                    media_serializer.save()
+                else:
+                    return Response(
+                        {'error': 'Media upload failed', 'details': media_serializer.errors},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            instance.save()
+            serializer = self.get_serializer(instance)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return Response(
+                {'error': 'Profile update failed', 'details': str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
     
 
 class ProfileMediaDeleteView(generics.DestroyAPIView):
