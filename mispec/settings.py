@@ -197,7 +197,7 @@ EMAIL_HOST = 'smtp-relay.brevo.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('DEFAULT_FROM_EMAIL')
-EMAIL_HOST_PASSWORD = config('BREVO_SMTP_KEY')
+EMAIL_HOST_PASSWORD = config('BREVO_SMTP_KEY', default='')
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 ADMIN_EMAIL = config('ADMIN_EMAIL')
