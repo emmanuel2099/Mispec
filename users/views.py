@@ -31,15 +31,20 @@ class OtpSendView(APIView):
 
         if not phone_number:
             return Response({"error": "Phone number is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        if not email:
+            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         otp_instance, created = OtpCheck.objects.get_or_create(email=email, phone_number=phone_number)
 
         generated_otp = generate_otp()
-
         otp_instance.otp_code = generated_otp
         otp_instance.save()
 
-        send_otp(email, generated_otp)
+        try:
+            send_otp(email, generated_otp)
+        except Exception as e:
+            return Response({"error": f"Failed to send OTP email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({
             "success": "OTP sent successfully",
