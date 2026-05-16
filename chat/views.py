@@ -77,7 +77,7 @@ class CreateEventView(APIView):
         event_admin = Profile.objects.get(user=request.user)
 
         chat_room = ChatRoom.objects.create(name=name, description=description, room_type='group')
-        member = Membership.objects.create(profile=event_admin, chat_room=chat_room, is_event_admin="True")
+        member = Membership.objects.create(profile=event_admin, chat_room=chat_room, is_event_admin=True)
         
         start_time = timezone.now()
         end_time = start_time + timedelta(seconds=duration_seconds)
@@ -819,23 +819,18 @@ class CallHistoryAPIView(APIView):
 
     def get(self, request):
         user_profile = request.user.profile
-        chatroom_id = request.data.get('chatroom_id')
+        chatroom_id = request.data.get('chatroom_id') or request.query_params.get('chatroom_id')
 
-        if not chatroom_id:
-            return Response({"error": "Chatroom ID is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        try:
-            chat_room = ChatRoom.objects.get(id=chatroom_id)
-        except ChatRoom.DoesNotExist:
-            return Response({"error": "Chatroom not found"}, status=status.HTTP_404_NOT_FOUND)
-        
-        calls_as_caller = CallRoom.objects.filter(caller=user_profile, room=chat_room)
-        calls_in_room = CallRoom.objects.filter(room=chat_room)
+        if chatroom_id:
+            try:
+                chat_room = ChatRoom.objects.get(id=chatroom_id)
+            except ChatRoom.DoesNotExist:
+                return Response({"error": "Chatroom not found"}, status=status.HTTP_404_NOT_FOUND)
+            calls = CallRoom.objects.filter(room=chat_room)
+        else:
+            # Return all calls involving this user
+            calls = CallRoom.objects.filter(caller=user_profile)
 
-        all_calls = list(calls_as_caller) + list(calls_in_room)
-        unique_calls = {call.id: call for call in all_calls}
-
-        serializer = CallHistorySerializer(unique_calls.values(), many=True, context={'user_profile': user_profile})
-
+        serializer = CallHistorySerializer(calls, many=True, context={'user_profile': user_profile})
         return Response(serializer.data, status=status.HTTP_200_OK)
 

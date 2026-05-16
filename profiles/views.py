@@ -56,43 +56,47 @@ class ProfileUpdateView(generics.RetrieveUpdateAPIView):
     
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        uploaded_media = request.data.get('uploaded_medias', [])
-        print(request.data)
-       
-        user_id = request.data.get('user')
-        user_instance = get_object_or_404(CustomUser, id=user_id)
 
-        instance.user = user_instance
+        user_id = request.data.get('user')
+        if user_id:
+            user_instance = get_object_or_404(CustomUser, id=user_id)
+            instance.user = user_instance
 
         for field in Profile._meta.fields:
             field_name = field.name
-
             if field_name == 'user':
                 continue
-
-            field_value = request.data.get(field_name, getattr(instance, field_name))
-
+            if field_name not in request.data:
+                continue
+            field_value = request.data.get(field_name)
             if field_name in ['longitude', 'latitude'] and field_value == '':
                 field_value = None
-
             setattr(instance, field_name, field_value)
 
-                
-            # setattr(instance, field_name, request.data.get(field_name, getattr(instance, field_name)))
-
-        entertainment_ids = request.data.getlist('entertainment', [])
+        # Handle M2M — works for both multipart (getlist) and JSON (list value)
+        entertainment_ids = (
+            request.data.getlist('entertainment')
+            if hasattr(request.data, 'getlist')
+            else request.data.get('entertainment', [])
+        )
         if entertainment_ids:
             instance.entertainment.set(entertainment_ids)
-        else:
-            entertainment_ids = instance.entertainment.values_list('id', flat=True)
 
-        sport_ids = request.data.getlist('sport', [])
+        sport_ids = (
+            request.data.getlist('sport')
+            if hasattr(request.data, 'getlist')
+            else request.data.get('sport', [])
+        )
         if sport_ids:
             instance.sport.set(sport_ids)
-        else:   
-            sport_ids = instance.sport.values_list('id', flat=True)
-        
-        for uploaded_media in request.data.getlist('uploaded_medias', []):
+
+        # Handle media uploads (multipart only)
+        uploaded_medias = (
+            request.data.getlist('uploaded_medias')
+            if hasattr(request.data, 'getlist')
+            else []
+        )
+        for uploaded_media in uploaded_medias:
             media_data = {'files': uploaded_media, 'profile': instance.id}
             media_serializer = ProfileMediaSerializer(data=media_data)
             if media_serializer.is_valid():
@@ -100,10 +104,8 @@ class ProfileUpdateView(generics.RetrieveUpdateAPIView):
             else:
                 print(media_serializer.errors)
 
-
         instance.save()
         serializer = self.get_serializer(instance)
-        print(instance.medias.all()) 
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
@@ -1498,12 +1500,22 @@ class SupportView(generics.CreateAPIView):
     serializer_class = SupportSerializer
 
     def post(self, request, *args, **kwargs):
-        sender = request.user
-        serializer = SupportSerializer(data=request.data)
+        sender_user = request.user
+        # Accept either 'description' or 'message' as the body field
+        data = request.data.copy()
+        if 'message' in data and 'description' not in data:
+            data['description'] = data['message']
+
+        try:
+            sender_profile = sender_user.profile
+            data['sender'] = str(sender_profile.id)
+        except Exception:
+            pass
+
+        serializer = SupportSerializer(data=data)
         if serializer.is_valid():
-            sender = sender
             description = serializer.validated_data['description']
-            
-            send_contact_email(sender, description)
+            send_contact_email(sender_user, description)
+            serializer.save()
             return Response({'message': 'Email sent successfully'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

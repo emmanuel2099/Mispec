@@ -38,10 +38,11 @@ class ProfileSerializer(serializers.ModelSerializer):
     medias = ProfileMediaSerializer(many=True, read_only=True)
     uploaded_medias = serializers.ListField(
         child = serializers.FileField(max_length=1000000, allow_empty_file=False, use_url=False),
-        write_only = True
+        write_only = True,
+        required = False
     )
     is_reported = serializers.SerializerMethodField()
-    distance = serializers.IntegerField()
+    distance = serializers.IntegerField(required=False, allow_null=True)
     
 
     class Meta:
@@ -111,11 +112,21 @@ class ReportSerializer(serializers.ModelSerializer):
 
 class ReferralSerializer(serializers.ModelSerializer):
     referred_user_first_name = serializers.CharField(source='referred_user.first_name', read_only=True)
-    referred_user_profile_picture = serializers.ImageField(source='referred_user.profile_picture', read_only=True)
+    referred_user_profile_picture = serializers.SerializerMethodField()
 
     class Meta:
         model = Referral
         fields = ['id', 'referred_by', 'referred_user', 'is_redeemed', 'timestamp', 'referred_user_first_name', 'referred_user_profile_picture']
+
+    def get_referred_user_profile_picture(self, obj):
+        try:
+            pic = obj.referred_user.profile_picture
+            if pic:
+                request = self.context.get('request')
+                return request.build_absolute_uri(pic.url) if request else pic.url
+        except Exception:
+            pass
+        return None
 
 class MatchSerializer(serializers.ModelSerializer):
     class Meta:
