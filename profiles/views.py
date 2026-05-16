@@ -333,8 +333,11 @@ class BothProfileFilterView(ProfileFilterView):
                 profile_distance = geopy_distance(user_coords, (profile.latitude, profile.longitude)).kilometers
                 setattr(profile, 'distance', int(profile_distance))
                 
-                # Use Celery to process geocoding asynchronously
-                process_geocoding.delay(profile.id, profile.latitude, profile.longitude)
+                # Use Celery to process geocoding asynchronously (fire and forget)
+                try:
+                    process_geocoding.delay(profile.id, profile.latitude, profile.longitude)
+                except Exception:
+                    pass  # Celery may not be available; skip silently
 
             except Exception as e:
                 setattr(profile, 'distance', None)
