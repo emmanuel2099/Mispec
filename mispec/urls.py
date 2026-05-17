@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns, static
+from django.views.generic import TemplateView
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -42,6 +43,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('profiles/', include('profiles.urls')),
     path('chat/', include('chat.urls')),
+    path('delete-account/', TemplateView.as_view(template_name='delete_account.html'), name='delete-account-page'),
     path('', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/api.json/', schema_view.without_ui(cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
