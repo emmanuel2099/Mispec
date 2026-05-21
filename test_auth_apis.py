@@ -7,14 +7,15 @@ Usage: python test_auth_apis.py
 import requests
 import json
 import sys
+import time
 
-BASE_URL = "http://146.190.171.123:8000"
+BASE_URL = "https://mispec.onrender.com"
 
-# Test credentials — change these as needed
-TEST_EMAIL = "testuser_auth@example.com"
-TEST_PHONE = "+2348012345678"
+# Unique email per run to avoid "already exists" errors
+RUN_ID = str(int(time.time()))[-6:]
+TEST_EMAIL = f"testuser_{RUN_ID}@example.com"
+TEST_PHONE = f"+23480{RUN_ID}"
 TEST_PASSWORD = "Test1234!"
-TEST_OTP = ""  # Will be filled after send_otp
 
 # Shared state across tests
 tokens = {}
@@ -42,7 +43,12 @@ def test_send_otp():
     })
     passed = r.status_code == 200
     log("POST /users/send_otp/", passed, r, "Check email/SMS for OTP")
-    return passed
+    if passed:
+        otp = r.json().get("otp")
+        if otp:
+            print(f"         OTP from response: {otp}")
+            return passed, otp
+    return passed, None
 
 
 def test_verify_otp(otp_code):
@@ -116,12 +122,19 @@ def test_reset_password_request():
         "email": TEST_EMAIL,
         "phone_number": TEST_PHONE
     })
-    passed = r.status_code == 200
-    log("POST /users/reset_password_request/", passed, r)
     otp = None
-    if passed:
-        otp = r.json().get("otp")
-        print(f"         OTP from response: {otp}")
+    try:
+        data = r.json()
+        otp = data.get("otp")
+        passed = r.status_code == 200
+        log("POST /users/reset_password_request/", passed, r)
+        if otp:
+            print(f"         OTP from response: {otp}")
+    except Exception:
+        # 500 means email crashed but endpoint logic may be fine
+        log("POST /users/reset_password_request/", False, r,
+            "500 error — email service crashing the request (server-side bug)")
+        passed = False
     return passed, otp
 
 
@@ -166,12 +179,19 @@ def test_provider_auth_existing_user(provider):
 
 
 def test_logout():
-    if not tokens.get("access") or not tokens.get("refresh"):
-        log("POST /users/logout/", False, note="No tokens available")
+    # Re-login to get a fresh token before logout
+    login_r = requests.post(f"{BASE_URL}/users/login/", json={
+        "phone_number": TEST_PHONE,
+        "password": TEST_PASSWORD
+    })
+    if login_r.status_code != 200:
+        log("POST /users/logout/", False, note="Could not re-login to get fresh token")
         return False
-    headers = {"Authorization": f"Bearer {tokens['access']}"}
+    fresh_access = login_r.json().get("tokens", {}).get("access", "")
+    fresh_refresh = login_r.json().get("tokens", {}).get("refresh", "")
+    headers = {"Authorization": f"Bearer {fresh_access}"}
     r = requests.post(f"{BASE_URL}/users/logout/", json={
-        "refresh_token": tokens["refresh"]
+        "refresh_token": fresh_refresh
     }, headers=headers)
     passed = r.status_code == 200
     log("POST /users/logout/", passed, r)
@@ -212,11 +232,12 @@ if __name__ == "__main__":
     print(f"\nTesting Auth APIs at: {BASE_URL}\n" + "-"*50)
 
     # Step 1: Send OTP
-    if not test_send_otp():
-        print("\n⚠️  send_otp failed. Enter OTP manually or check server.")
-
-    # Step 2: Get OTP from user input
-    otp = input("\nEnter OTP received (email/SMS): ").strip()
+    _, auto_otp = test_send_otp()
+    if auto_otp:
+        otp = auto_otp
+        print(f"         Using OTP from response: {otp}")
+    else:
+        otp = input("\nEnter OTP received (email/SMS): ").strip()
 
     # Step 3: Verify OTP
     test_verify_otp(otp)

@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Base URL - Update this to your actual backend URL
-BASE_URL = os.getenv('BASE_URL', 'http://localhost:8000')
+BASE_URL = os.getenv('BASE_URL', 'https://mispec.onrender.com')
 
 # Test data storage
 test_data = {
