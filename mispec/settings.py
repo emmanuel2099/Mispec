@@ -303,7 +303,7 @@ cloudinary.config(
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-firebase_cred_path = "firebase/mispec-dating-app-firebase-adminsdk-9j4qt-6ff6fe6474.json"
+firebase_cred_path = "firebase/mispec-3f038-firebase-adminsdk.json"
 if os.path.exists(firebase_cred_path):
     cred = credentials.Certificate(firebase_cred_path)
     firebase_admin.initialize_app(cred)

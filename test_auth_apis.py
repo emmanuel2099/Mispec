@@ -9,7 +9,7 @@ import json
 import sys
 import time
 
-BASE_URL = "https://mispec.onrender.com"
+BASE_URL = "https://mispec-ea48.onrender.com"
 
 # Unique email per run to avoid "already exists" errors
 RUN_ID = str(int(time.time()))[-6:]
