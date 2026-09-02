@@ -41,15 +41,21 @@ class OtpSendView(APIView):
         otp_instance.otp_code = generated_otp
         otp_instance.save()
 
+        email_error = None
         try:
             send_otp(email, generated_otp)
         except Exception as e:
-            return Response({"error": f"Failed to send OTP email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            email_error = str(e)
+            print(f"OTP email send failed: {email_error}")
 
-        return Response({
-            "success": "OTP sent successfully",
-            "otp": generated_otp  # TODO: remove once email delivery is confirmed working
-        }, status=status.HTTP_200_OK)
+        response = {
+            "success": "OTP sent successfully" if email_error is None else "OTP generated (email delivery failed)",
+            "otp": generated_otp,  # TODO: remove once email delivery is confirmed working
+        }
+        if email_error:
+            response["email_warning"] = email_error
+
+        return Response(response, status=status.HTTP_200_OK)
     
 
 class VerifyOtpView(APIView):
@@ -108,6 +114,10 @@ class ResetPasswordRequest(APIView):
 
         otp = generate_otp()
 
+        otp_instance, _ = OtpCheck.objects.get_or_create(email=email, phone_number=phone_number)
+        otp_instance.otp_code = otp
+        otp_instance.save()
+
         try:
             send_otp(email, otp)
         except Exception as e:
@@ -125,11 +135,25 @@ class ResetPasswordVerify(APIView):
 
         phone_number = serializer.validated_data['phone_number']
         new_password = serializer.validated_data['new_password']
+        otp_code = serializer.validated_data.get('otp')
 
         user = get_object_or_404(CustomUser, phone_number=phone_number)
 
+        if otp_code:
+            otp_ok = OtpCheck.objects.filter(
+                phone_number=phone_number, otp_code=otp_code
+            ).exists() or OtpCheck.objects.filter(
+                email=user.email, otp_code=otp_code
+            ).exists()
+            if not otp_ok:
+                return Response({'error': 'Invalid or expired OTP'}, status=status.HTTP_400_BAD_REQUEST)
+
         user.set_password(new_password)
         user.save()
+
+        OtpCheck.objects.filter(phone_number=phone_number).delete()
+        if user.email:
+            OtpCheck.objects.filter(email=user.email).delete()
 
         return Response({'message': 'Password reset successfully'}, status=status.HTTP_200_OK)
 

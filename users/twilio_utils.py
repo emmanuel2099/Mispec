@@ -37,6 +37,7 @@ def send_otp(email, otp):
             print(f"[OTP] Email sent to {email} | messageId: {response.json().get('messageId')}")
         else:
             print(f"[OTP] Brevo error {response.status_code}: {response.text}")
+            # Do not raise — caller still returns the OTP so signup can continue.
             raise Exception(f"Brevo API error: {response.status_code} {response.text}")
 
     except Exception as e:

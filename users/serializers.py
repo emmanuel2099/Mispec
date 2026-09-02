@@ -24,11 +24,21 @@ class ProviderAuthSerializer(serializers.ModelSerializer):
     def validate(self, data):
         provider = data.get('provider')
         provider_id = data.get('provider_id')
+        email = data.get('email')
 
         try:
             existing_user = CustomUser.objects.get(provider_id=provider_id, provider=provider)
         except CustomUser.DoesNotExist:
             existing_user = None
+
+        # Migrate older clients that used email as provider_id
+        if existing_user is None and email:
+            existing_user = CustomUser.objects.filter(
+                provider=provider, email=email
+            ).first()
+            if existing_user is not None:
+                existing_user.provider_id = provider_id
+                existing_user.save(update_fields=['provider_id'])
 
         if existing_user:
             if not existing_user.is_active:
@@ -47,7 +57,7 @@ class ProviderAuthSerializer(serializers.ModelSerializer):
             # Handle first-time sign-in
             phone_number = data.pop('phone_number', None)
 
-            if phone_number is None:
+            if not phone_number:
                 raise serializers.ValidationError("Phone number is required for new users.")
 
             data['is_verified'] = True
@@ -143,6 +153,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     def validate(self, args):
         email = args.get('email', None)
         phone_number = args.get('phone_number', None)
+        otp = args.get('otp', None)
         referral_code = args.get('referral_code', None)
 
         if CustomUser.objects.filter(email=email).exists():
@@ -150,16 +161,30 @@ class RegistrationSerializer(serializers.ModelSerializer):
         if CustomUser.objects.filter(phone_number=phone_number).exists():
             raise AuthenticationFailed('This phone number already exists')
 
+        otp_match = OtpCheck.objects.filter(email=email, otp_code=otp).first()
+        if otp_match is None:
+            # Also allow match by email + phone when both were stored together
+            otp_match = OtpCheck.objects.filter(
+                email=email, phone_number=phone_number, otp_code=otp
+            ).first()
+        if otp_match is None:
+            raise AuthenticationFailed('Invalid or expired OTP. Please request a new code.')
+
         return super().validate(args)
     
 
     def create(self, validated_data):
         referral_code = validated_data.pop('referral_code', None)
+        otp_code = validated_data.get('otp')
+        email = validated_data.get('email')
         
         validated_data['is_verified'] = True
         validated_data['is_new_user'] = True
 
         user = CustomUser.objects.create_user(**validated_data)
+
+        # Consume OTP so it cannot be reused
+        OtpCheck.objects.filter(email=email, otp_code=otp_code).delete()
 
         if referral_code:
             handle_referral(self.context['request'], referral_code, user)
@@ -231,6 +256,7 @@ class ResetPasswordRequestSerializer(serializers.Serializer):
 class ResetPasswordVerifySerializer(serializers.Serializer):
     phone_number = serializers.CharField()
     new_password = serializers.CharField()
+    otp = serializers.CharField(required=False, allow_blank=True)
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
